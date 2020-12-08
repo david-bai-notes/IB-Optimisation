@@ -1,0 +1,268 @@
+\section{Network Flow Problems}
+\subsection{The Maximal Flow Problem}
+\begin{definition}
+    A network (or directed graph) is a set $N=\{1,\ldots,n\}$ of nodes (or vertices) together with a collection $A\subset N\times N$ of ordered pairs $(i,j)$ called arcs or directed edges.
+    The flow in the network is a collection of numbers $(x_{i,j})$ indexed by elements in $N\times N$.
+\end{definition}
+The problem we wish to consider is formulated in the following way:
+Each arc $(i,j)$ is assigned a capacity $c_{i,j}\ge 0$.
+In reality (or for notational convenience), we will pretend all arcs in $N\times N$ exists and $c_{i,j}=0$ for $(i,j)\notin A$.\\
+We distinguish two special nodes in the network.
+Node $1$ is called the source node while the node $n$ is called the sink.
+The maximum flow problem is to pump as much flow through the network, from the source to the sink, subject to the capacity constraints and the constraint that the flow-in and flow-out cancelled out in any notes except the source and the sink.
+\footnote{Normally, there is no flow-in at the source and no flow-out at the sink.}
+Formally, we want to maximise $v\in\mathbb R$ subject to $0\le x_{i,j}\le c_{i,j}$ and
+$$\sum_{j\in N}x_{i,j}-\sum_{j\in N}x_{j,i}=\begin{cases}
+    v\text{, if $i=1$}\\
+    0\text{, if $1<i<n$}\\
+    -v\text{, if $i=n$}
+\end{cases}$$
+which, as one can discover joyfully, is a linear program.
+As an aside, the variable $v$ does not have to appear as it can be expressed in terms of $(x_{i,j})$ in the constraint.
+It is simply for notational convenience.\\
+Of course, we can apply the barrier method or simplex algorithm and call it a day, but certainly there are more useful structures in this system that allows us to simplify it.
+\subsection{The Ford-Fulkerson Algorithm}
+A nice algorithm developed by Ford-Fulkerson is as follows:\\
+First, assign an initial feasible flow $(x_{i,j})$ with value $v$ (for example we can take all of them to be zero).
+Then find an augmented path, defined a a collection of nodes $1=i_1,i_2,\ldots,i_{r-1},i_r=n$ with eiher $c_{i_k,i_{k+1}}-x_{i_k,i_{k+1}}>0$ or $x_{i_{k+1},i_k}>0$ for each $k$.
+If an augmented path exists, then increase the flow along the path by the amount
+$$\delta=\min_{k\in\{1,\ldots,r-1\}}\max\{c_{i_k,i_{k+1}}-x_{i_k,i_{k+1}},x_{i_{k+1},i_k}\}$$
+which is positive by assumption and
+$$x_{i,j}'=\begin{cases}
+    x_{i,j}+\delta\text{, if $i,j$ are consecutive in the path}\\
+    x_{i,j}-\delta\text{, if $j,i$ are consecutive in the path}\\
+    x_{i,j}\text{, otherwise}
+\end{cases}$$
+Then, as one can check, $(x_{i,j}')$ is also feasible with $v'=v+\delta$.
+We shall show that the non-existence of an augmented path is equivalent to the maximality of the flow.
+\begin{definition}
+    Let $S\subset N$ be a collection of nodes.
+    The complement of $S$ in $N$ is denoted $\bar{S}=N\setminus S$.
+    A cut seperating the source and the sink is the set of arcs $(i,j)\in S\times \bar{S}$ where $\{1,n\}\in S$.
+    THe capacity of a cut $(S,\bar{S})$ is defined as
+    $$c(S,\bar{S})=\sum_{i\in S,j\in\bar{S}}c_{i,j}$$
+\end{definition}
+\begin{theorem}[The max-flow min-cut Theorem]\label{max-flow-min-cut}
+    For a network, the maximum value of a feasible flow from the source to the sink equals to the minimum of all cut capacities of all cuts seperating the source and the sink.
+\end{theorem}
+\begin{proof}
+    Fix any feasible flow $(x_{i,j})$.
+    For any $S,T\subset N$ we write
+    $$f(S,T)=\sum_{i\in S,j\in T}x_{i,j}$$
+    be the total flow over arcs joining $S$ and $T$.
+    Now let $S,\bar{S}$ be a cut seperating the source and the sink, the constraint tells us
+    \begin{align*}
+        v&=\sum_{i\in S,j\in N}x_{i,j}-\sum_{j\in N,i\in S}x_{ji}\\
+        &=f(S,N)-f(N,S)\\
+        &=(f(S,S)+f(S,\bar{S}))-(f(S,S)+f(\bar{S},S))\\
+        &=f(S,\bar{S})-f(\bar{S},S)\\
+        &\le f(S,\bar{S})\\
+        &\le c(S,\bar{S})
+    \end{align*}
+    Hence the value of any flow is less than or equal to the capacity of any cut.
+    To show that they are actual equal, notice that the inequality above becomes an equality iff $x_{i,j}=c_{i,j}$ and $x_{j,i}=0$ for all arcs $(i,j)$ in $(S,\bar{S})$.
+    SO let $(x_{i,j}^\star)$ be a maximal flow (which exists by compactness).
+    We define a set $S$ by induction in the following criteria:\\
+    1. The source is in $S$.\\
+    2. If $i\in S$ and $x_{i,j}^\star<c_{i,j}$, then $j$ in $S$.\\
+    3. If $i\in S$ and $x_{j,i}^\star>0$, then $j\in S$.\\
+    Now the sink is in $\bar S$ since otherwise there would be a path (by the inductive process) from the source to the sink pumping strictly more flow, contradicting the maximality of $(x_{i,j}^\star)$.
+    The cut $(S,\bar{S})$ has the property we wanted.
+\end{proof}
+The same constructive idea shows that if no augmented path can be found, then the flow is maximal as one can construct such a cut which has capacity equal to the value of the flow.\\
+Also, the algorithm is guaranteed to terminate if the capacities and elements of the initial flow are all integer (hence it also terminates if all are rational by multiplying an integer).
+This is because the $\delta$ we obtain from the algorithm is at least $1$, so if the value of $v$ increases indefinitely through the algorithm, it cannot be bounded, which contradicts the compactness of the domain of the problem.
+But if something is irrational, the algorithm may not terminate.
+\subsection{The Dual Problem}
+The Lagrangian of the maximal flow problem is (note that $v$ can be expressed in terms of $(x_{i,j})$):
+\begin{align*}
+    L&=v+\sum_i\lambda_i\left( \sum_jx_{i,j}-\sum_jx_{j,i} \right)-\lambda_1v+\lambda_nv+\sum_{i,j}\mu_{i,j}(c_{i,j}-x_{i,j}-z_{i,j})\\
+    &=\sum_{i,j}c_{i,j}\mu_{i,j}+v(1-\lambda_1+\lambda_n)+\sum_{i,j}x_{i,j}(\lambda_i-\lambda_j-\mu_{i,j})-\sum_{i,j}\mu_{i,j}z_{i,j}
+\end{align*}
+where $z$ is the slack variable.
+For $L$ to be bounded above varying $x,z$, we have
+$$\begin{cases}
+    1-\lambda_1+\lambda_n=0\\
+    \lambda_i-\lambda_j\le\mu_{i,j}\\
+    \mu_{i,j}\ge 0
+\end{cases}$$
+So the dual problem is to minimise $\sum_{i,j}c_{i,j}\mu_{i,j}$ subject to $\lambda_1-\lambda_n=1,\lambda_i-\lambda_j\le\mu_{i,j},\mu_{i,j}\ge 0$.
+By complementary slackness, if $x$ is optimal for the primal problem and $(\lambda,\mu)$ is optimal for the dual problem, then $\lambda_i-\lambda_j=\mu_{i,j}$ and $\mu_{i,j}=0$.\\
+By Theorem \ref{max-flow-min-cut}, there is a set $S$ with $1\in S,n\notin S$ such that the optimal dual variables are given by
+$$\lambda_i=\begin{cases}
+    1\text{, if $i\in S$}\\
+    0\text{, if $i\in\bar{S}$}
+\end{cases},\mu_{i,j}=\begin{cases}
+    1\text{, if $i\in S,j\in\bar{S}$}\\
+    0\text{, otherwise}
+\end{cases}$$
+due to our previously discussed dual constraints.
+\subsection{Combinatorial Applications}
+There are certain combinatorial applications of Theorem \ref{max-flow-min-cut}.
+One combinatorial problems is formulated like this:
+Suppose that a standard deck of $52$ playing cards dealt into $13$ piles of $4$ cards each, we want to show that it is possible to select exactly one card from each pile such that the selected cards contain one card of each of the $13$ ranks A,2,\dots,10,J,Q,K.\\
+To prove this, we build a network with nodes
+$$A,a_1,\ldots,a_{13},b_1,\ldots,b_{52},c_1,\ldots,c_{13},B$$
+as follows:
+The nodes $(a_i)$ represent the $13$ piles, and the nodes $(b_j)$ represent the $52$ cards, and the node $(c_k)$ represent the $13$ ranks.
+The node $A$ is the source and $B$ is the sink.\\
+We put an arc of capacity $1$ from $A$ to each of $a_i$, and an arc of infinite (or very large) capacity from $a_i$ to $b_j$ if card $j$ is in stack $i$.
+There will be exactly four arcs leaving each $a_i$ and exactly one arc entering each $b_j$.\\
+We also put an arc of infinite capacity from $b_j$ to $c_k$ if card $j$ has rank $k$, so again there will be exactly one arc leaving each of the nodes $b_j$ and exactly four arcs entering each of the nodes $c_k$.\\
+Lastly, put an arc of capacity $1$ from each node $c_k$ to the sink $B$.
+\begin{claim}
+    The minimum capacity of any cut is $13$.
+\end{claim}
+\begin{proof}
+    The cut $\{(A,a_i):i=1,\ldots,13\}$ has capacity $13$.
+    We shall show that any other cut has capacity at least $13$.
+    Consider a cut with finite capacity, then it does not contain any arc of the form $(a_i,b_j)$ or $(b_j,c_k)$.
+    If there are $r$ arcs of the form $(c_k,B)$ for some $k$, then there are at least $s=13-r$ nodes $c_k$ still connected to $B$.
+    Each of these $s$ many $c_k$'s is connected to four of the nodes $b_j$ exclusively, so $4s$ many $b_j$ is connected to $B$.
+    But then at least $(4s)/4=s$ many nodes $a_i$ are connected to those $b_j$, hence to $B$, and they are also connected to $A$.
+    So there are at least $s$ arcs of the form $(A,a_i)$ to be removed in order to complete the cut.
+    This produces a total capacity of at least $r+s=13$.
+\end{proof}
+So by Theorem \ref{max-flow-min-cut}, there is a flow of value $13$.
+But the capacities are either $1$ or infinity (or a very big integer), the Ford-Fulkerson algorithm starting with initial flow $0$ will terminate.
+Hence there is an optimal flow (whose flows along every arc must be $0$ or $1$ by assumption).
+Let $x$ be the optimal flow, then necessarily $x_{A,a_i}=1$.
+As it is a flow, there is some $j$ such that $x_{a_i,b_j}=1$ and some $k$ such that $x_{b_j,c_k}=1$.
+So we can match nodes in the way $a_i,c_k$ which provides the solution.
+\subsection{The Transportation Problem}
+The problem is as follows:
+Imagine there are $m$ suppliers of a good labelled $1,\ldots,m$.
+For any $i$, the supplier $i$ can supply $S_i$ units of the good.
+There are $n$ destinations labelled $1,\ldots,n$ that require the supply of the good.
+For any $j$, destination $j$ requires $D_j$ units of the good.
+For each pair $(i,j)$, there is an associated unit transport cost $d_{i,j}$.
+It is assumed in addition that the supply and demand matches, i.e.
+$$\sum_{i=1}^mS_i=\sum_{j=1}^nD_j$$
+This is basically the linear program to minimise the total cost $\sum_{i,j}d_{i,j}x_{i,j}$ subject to
+$$\begin{cases}
+    \forall i,\sum_{j=1}^nx_{i,j}=S_i\\
+    \forall j,\sum_{i=1}^mx_{i,j}=D_j\\
+    \forall i,j,x_{i,j}\ge 0
+\end{cases}$$
+The Lagrangian is then
+\begin{align*}
+    L(x,\lambda,\mu)&=\sum_{i,j}d_{i,j}x_{i,j}+\sum_{i=1}^m\lambda_i\left( S_i-\sum_{j=1}^n x_{i,j} \right)+\sum_{j=1}^n\mu_j\left( D_j-\sum_{i=1}^mx_{i,j} \right)\\
+    &=\sum_{i,j}(d_{i,j}-\lambda_i-\mu_j)x_{i,j}+\sum_{i=1}^m\lambda_iS_i+\sum_{j=1}^n\mu_jD_j
+\end{align*}
+Note that $x_{i,j}\ge 0$, so we have $d_{i,j}\ge \lambda_i+\mu_j$ for the Lagrange multipliers to be feasible, hence
+$$\Lambda=\{(\lambda,\mu):\inf_{x\ge 0}L(x,\lambda,\mu)>-\infty\}=\{(\lambda,\mu):\forall i,j,d_{i,j}\ge \lambda_i+\mu_j\}$$
+If $(x_{i,j})$ is optimal for the problem, then there are feasible $(\lambda,\mu)$ such that
+$$\forall i,j,(d_{i,j}-\lambda_i-\mu_j)x_{i,j}=0$$
+by complementary slackness.
+We can of course use simplex algorithm as it is a linear program, but the additional structure here allows us to simplify it.
+\subsection{The Transportation Algorithm}
+We design an algorithm for it as follows:
+First, find an initial feasible assignment.
+As there are $m+n-1$ linearly independent relations constraining the feasible set, any basic feasible solution will have $m+n-1$ basic variables.
+There are two ways to do this: the North-West method and the greedy algorithm.
+These will be introduced in a second.\\
+After the initial feasible assignment is done, we assign Lagrange multipliers.
+We may take $\lambda_1=0$ and enforce complementary slackness by choosing $\lambda_i$ and $\mu_i$ subject to $d_{i,j}=\lambda_i+\mu_j$ for each basic cell.\\
+Next, we check for optimality by looking at the dual feasibility of the Lagrange multipliers.
+The feasibility constraint is just $d_{i,j}\ge\lambda_i+\mu_j$ for each $i,j$.
+If this is valid, then we are done.\\
+Otherwise, we do the pivoting operation by picking one of the cells $(i,j)$ such that $\lambda_i+\mu_j>d_{i,j}$.
+the rule is to pick the cell with the largest difference $\lambda_i+\mu_j-d_{i,j}$.
+Now put an amount $\epsilon>0$ units of flow into the pivot cell.
+At the same time add or substract $\epsilon$ from the basic cell to maintain feasibility.
+We will try to choose the largest $\epsilon$ possible such that the flow is feasible.
+Then do the same thing again and again until we reach optimality.
+\begin{example}
+    Suppose the table of supply, demand and cost is
+    $$\begin{array}{c|c|c|c|c|c}
+        d_{i,j}&&&&&D_j\\
+        \hline
+        &8&6&7&5&12\\ \hline
+        &4&3&5&4&8\\ \hline
+        &9&8&6&7&11\\ \hline
+        S_i&7&6&10&8&
+    \end{array}$$
+    The North-West method is filling in the number of unit in each transport flow starting from North-West (top-left) of the array and fit in as many as we can, and the precedence of filling is from top-left to bottom-right.
+    This way would give the basic feasible solution:
+    $$\begin{pmatrix}
+        7&5&&\\
+        &1&7&\\
+        &&3&8
+    \end{pmatrix}$$
+    Then we assign Lagrange multipliers by complementary slackness:
+    $$\begin{array}{c|cccc|c}
+        &8&6&8&9&\mu_j\\ \hline
+        0&7&5&0&0&\\
+        -3&0&1&7&0&\\
+        -2&0&0&3&8&\\ \hline
+        \lambda_i&&&&&
+    \end{array}$$
+    Now we test the optimality by writing out the payoffs, i.e. $\lambda_i+\mu_j-d_{i,j}$ in each of the zero cells (denoted by the terms in square brackets), which gives
+    $$\begin{array}{c|cccc|c}
+        &8&6&8&9&\mu_j\\ \hline
+        0&7&5&[1]&[4]&\\
+        -3&[1]&1&7&[2]&\\
+        -2&[-3]&[-4]&3&8&\\ \hline
+        \lambda_i&&&&&
+    \end{array}$$
+    So we need to pivot the top right corner, i.e. make it basic.
+    Suppose it is changed to $\epsilon$, then we need to change our solution to
+    $$\begin{pmatrix}
+        7&5-\epsilon&&\epsilon\\
+        &1+\epsilon&7-\epsilon&\\
+        &&3+\epsilon&8-\epsilon
+    \end{pmatrix}$$
+    which is always feasible.
+    For the solution to be basic, we take $\epsilon=5$ to swipe out an entry to get the new solution, which, after calculating Lagrange multipliers and payoffs,
+    $$\begin{array}{c|cccc|c}
+        &8&2&4&5&\mu_j\\ \hline
+        0&7&[-4]&[-3]&5&\\
+        1&[5]&6&2&[2]&\\
+        2&[1]&[-4]&8&3&\\ \hline
+        \lambda_i&&&&&
+    \end{array}$$
+    So we pivot the second row of the first column with, as we can find, has $\epsilon=2$.
+    Doing this again and again and again and again and again and again and again and again and again yields our final table
+    $$\begin{array}{c|cccc|c}
+        &7&6&4&5&\mu_j\\ \hline
+        0&[-1]&5&[-3]&7&\\
+        -3&7&1&[-4]&[-2]&\\
+        2&[0]&[0]&10&1&\\ \hline
+        \lambda_i&&&&&
+    \end{array}$$
+    where all the entries in the square bracket is nonpositive, hence this is the optimal solution.\\
+    The greedy algorithm works as well.
+    This time we start with the cell of lowest cost and fill in as many as possible, then the second lowest, etc..
+    In our case, this will produce the initial feasible assignment
+    $$\begin{pmatrix}
+        6&&&6\\
+        &6&&2\\
+        1&&10&
+    \end{pmatrix}$$
+    to which we can apply the same method to get to optimality.
+\end{example}
+\begin{remark}
+    If the original posture of the prblem is such that the total supply exceeds the total demand, then we can reformulate the problem by adding another destination with demand
+    $$D_{n+1}=\sum_{i=1}^mS_i-\sum_{j=1}^nD_j$$
+    and set $d_{i,n+1}=0$ for all $i$ to ensure that all differences are consumed.
+\end{remark}
+Why does pivoting decrease the total cost?
+For any feasible $x$ and any collection $(\lambda_i)$ and $(\mu_j)$ of Lagrange multipliers we have
+\begin{align*}
+    f(x)&=L(x,\lambda,\mu)\\
+    &=\sum_{i,j}(d_{i,j}-\lambda_i-\mu_j)x_{i,j}+\sum_{i=1}^m\lambda_iS_i+\sum_{j=1}^n\mu_jD_j
+\end{align*}
+So suppose $x_0$ is the initial feasible assignment, then we can choose $\lambda_{i,0}$ and $\mu_{i,0}$ to enforce complementary slackness $(d_{i,j,0}-\lambda_{i,0}-\mu_{j,0})x_{i,j,0}=0$, then
+$$f(x_0)=\sum_{i=1}^m\lambda_{i,0}S_i+\sum_{j=1}^n\mu_{j,0}D_j$$
+Let $B=\{(i,j):x_{i,j,0}>0\}$ and $N=\{(i,j):x_{i,j,0}=0\}$ be the basis of the basic feasible solution $x_0$.
+We choose $\lambda_{i,0}$ and $\mu_{i,0}$ such that $\lambda_{i,0}+\mu_{j,0}=d_{i,j}$ for all $(i,j)\in B$.
+Suppose the next feasible assignment $x_1$ is non-degenerate, as one of the initial non-basic cells (the pivot cell) is made basic, there is a cell $(i_N,j_N)\in N$ such that
+$$x_{i_N,j_N,0}=0,x_{i_N,j_N,1}=\epsilon>0$$
+Then we obtain
+\begin{align*}
+    f(x_1)&=\sum_{(i,j)\in B}(d_{i,j}-\lambda_{i,0}-\mu_{j,0})x_{i,j,1}+\sum_{(i,j)\in N}(d_{i,j}-\lambda_{i,0}-\mu_{j,0})x_{i,j,1}
+    +f(x_0)\\
+    &=(d_{i_N,j_N}-\lambda_{i_N,0}-\mu_{j_N,0})\epsilon+f(x_0)\\
+    &>f(x_0)
+\end{align*}
+by assumption.

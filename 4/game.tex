@@ -1,0 +1,181 @@
+\section{Game Theory}
+\subsection{Two-person Zero-sum Games}
+Consider a game where there are two players called Player I and Player II.
+Player I has $m$ choices of strategies labeled by $i\in\{1,\ldots,m\}$ and Player II has $n$ choices of strategies $j\in\{1,\ldots,n\}$.
+We assume that the game is zero-sum, i.e. if Player I chooses strategy $i$ and Player II chooses strategy $j$, then Player I is paid $a_{i,j}$ and Player II is paid $-a_{i,j}$.
+So the net payment across the game is zero.
+The matrix $A=(a_{i,j})$ is called the payoff matrix of the game.
+This is an $m\times n$ matrix.
+Assume that both players want to maximise their payoff and they know the other wants it too.
+\footnote{And they know the other knows they want it, and they know the other knows they know the other wants it, etc.}\\
+Player I might want to solve the maximisation of $\min_ja_{ij}$ subject to $i\in\{1,\ldots,m\}$ and Player II to solve the minimisation of $\max_ia_{ij}$ subject to $j\in\{1,\ldots,n\}$.
+\begin{example}
+    Consider
+    $$A=\begin{pmatrix}
+        1&2\\
+        3&4
+    \end{pmatrix}$$
+    Then obviously Player I will pick $i=2$ and Player II will pick $j=1$.
+    This is independent of who playing first.
+\end{example}
+Such a point $(2,1)$ in the above example with the said property is called a saddle point of the matrix.
+\begin{definition}
+    A saddle point of a payoff matrix $A$ is a pair of strategies $(i,j)$ with the property
+    $$a_{i,j}=\max_{i'}\min_{j'}a_{i',j'}=\min_{j'}\max_{i'}a_{i',j'}$$
+    If a payoff matrix $A$ has saddle point $(i,j)$, then $a_{i,j}$ is called the value of the game.
+\end{definition}
+Not all payoff matrices have a saddle point, an easy example is
+$$A=\begin{pmatrix}
+    4&2\\
+    1&3
+\end{pmatrix}$$
+where $\max_i\min_ja_{i,j}=2\neq 3=\min_j\max_ia_{i,j}$.
+\subsection{Pure and Mixed Strategies}
+Often, the game has the property that the players choose their strategies simultaneously.
+The idea to analyse these games is to randomise the strategies.
+\begin{definition}
+    A mixed strategy is an assignment of probabilities to each of the individual strategies.
+    A pure strategy is a mixed strategies assigning $1$ to one particular strategy and $0$ to all others.
+\end{definition}
+We use the notation that Player I plays strategy $i$ with probability $p_i$ and Player II plays strategy $j$ with probability $q_j$.
+Therefore Player I would want to maximise
+$$\min_j\mathbb E[\text{payout}|\text{Player II picks strategy $j$}]$$
+which translates to maximising
+$$\min_j\sum_{i=1}^mp_ia_{i,j}$$
+subject to 
+$$\sum_{i=1}^mp_i=1,\forall i\in\{1,\ldots,m\},p_i\ge 0$$
+We can turn this into a linear program.
+Introducing $e=(1,\ldots,1)^\top$ (dimension implied by context), then the problem can be written as maximising $v\in\mathbb R$ subject to $A^\top p\ge ve,e^\top p=1,p\ge 0$.
+Similarly, the optimisation problem for Player II can be written as minimising $w$ subject to $Aq\le we, e^\top q=1,q\ge 0$.\\
+Unsurprisingly, these two problems are naturally dual to each other.
+Indeed, one can observe that the Lagrangian of Player I is
+\begin{align*}
+    L(p,v,z,q,w)&=v+q^\top(A^\top p-z-ve)+w(1-p^\top e)\\
+    &=w+v(1-q^\top e)+p^\top(Aq-we)-z^\top q
+\end{align*}
+where $z$ is the slack variable.
+So the feasible Lagrange multipliers are constrained by $q\ge 0,Aq\le we,e^\top q=1$ and $\sup L=w$.\\
+By the fundamental theorem of linear programs, $(p,v)$ is optimal iff there is some $(q,w)$ such that both tuples are feasible and
+$$(Ap-we)^\top p=0=q(A^\top p-ve)$$
+Where we see $wp^\top e=vq^\top e$, so $v=w$ in optimal case as one would expect.
+\begin{theorem}[Fundamental Theorem of Matrix Games]
+    The mixed row strategy $p$ is optimal for Player I iff there exists a mixed column strategy $q$ for Player II and $v\in\mathbb R$ such that:\\
+    1. $A^\top p\ge ve,e^\top p=1,p\ge 0$.\\
+    2. $Aq\le ve,e^\top q=1,q\ge 0$.\\
+    3. $v=p^\top Aq$.
+    In this case, $(p,v)$ is optimal for the problem of Player I and $(q,v)$ is optimal for Player II.
+\end{theorem}
+\begin{proof}
+    Immediate.
+\end{proof}
+The value $v$ above is called the value of the game.
+Hence, for optimal mxied strategies, complementary slackness ensures that if Player II plays $j$ with positive probability, then the conditional expected payoff given Player II plays $j$ equals the value of the game.
+An analogous statement works the other way around.
+In other words,
+$$\begin{cases}
+    q_j>0\implies (A^\top p)_j=v\\
+    p_i>0\implies (Aq)_i=v
+\end{cases}$$
+\begin{definition}
+    A game is symmetric if the payoff matrix is antisymmetric.
+    That is $A^\top=-A$.
+\end{definition}
+\begin{example}
+    The rock-paper-scissors game
+    $$\begin{pmatrix}
+        0&-1&1\\
+        1&0&-1\\
+        -1&1&0
+    \end{pmatrix}$$
+    is symmetric.
+\end{example}
+\begin{theorem}
+    A symmetric game has zero value.
+\end{theorem}
+This is very intuitive by symmetry.
+We can also make use of our oven-ready fundamental theorem.
+\begin{proof}
+    Suppose $(p,v,q)$ satisfy the (necessary) conditions of optimality, then by antisymmetry of $A$, the tuple $(q,-v,p)$ satisfies the (sufficient) condition of optimality.
+    Hence $v=-v\implies v=0$.
+\end{proof}
+\subsection{Finding Optimal Strategies}
+If the game admits a saddle point $(i,j)$, then by definition the pure strategy $i$ is optimal for Player I and the strategy $j$ is optimal for Player II, consequently the value of the game is $a_{i,j}$.
+Otherwise, we reduce the game by eliminating dominating strategies.
+A row $i$ dominates $i'$ is $a_{i,j}\ge a_{i',j}$ for any $j$, so if a row $i'$ is dominated by some other row, then Player I will never play strategy $i'$.
+Similarly if there is some $j,j'$ with $a_{i,j}\le a_{i,j'}$ for any $i$, then Player II will never play $j'$.
+\begin{example}
+    Consider the payoff matrix
+    $$A=\begin{pmatrix}
+        2&3&4&2\\
+        3&1&1/2&4\\
+        1&3&2&3
+    \end{pmatrix}$$
+    One can check that there is no saddle point.
+    Also, the first column dominates the fourth column, so Player II will never play the fourth column.
+    After eliminating that, the first row dominates the third row, so the third row is eliminated too, leaving a modified payoff matrix
+    $$A'=\begin{pmatrix}
+        2&3&4\\
+        3&1&1/2
+    \end{pmatrix}$$
+    So the optimal strategy $p$ of Player I  is of the form $(p_1,1-p_1,0)^\top$.\\
+    Now the region $(A')^\top p'\ge ve$ (where $p'=(p_1,1-p_1)^\top$ are the remaining relevant strategies) is given by
+    $$\begin{cases}
+        2p_1+3(1-p_1)\ge v\implies v\le 3-p_1\\
+        3p_1+(1-p_1)\ge v\implies v\le 1+2p_1\\
+        4p_1+(1-p_1)/2\ge v\implies v\le (1+7p_1)/2
+    \end{cases}$$
+    So by sketching the graph of $v$ against $p_1$, we find that the maximum $v$ occurs at $p_1=2/3$ and the optimal strategy of Player I is $p=(2/3,1/3,0)^\top$, and the value of the game is $v=7/3$.\\
+    By complementary slackness $q_3=0$ as the third constraint is not tight.
+    So $q=(q_1,1-q_1,0,0)^\top$ for some probability $q_1$.
+    As $p_1=2/3>0$, the first dual constraint is binding by complementary slackness, so
+    $$2q_1+3(1-q_1)=7/3\implies q_1=2/3$$
+    Therefore $q=(2/3,1/3,0,0)^\top$.
+\end{example}
+If it does not get clear after using these tricks, one can always use the simplex algorithm.
+If $\min_{i,j}a_{i,j}>0$ then we know $v$ is strictly positive, hence we can rewrite the problem of Player I as maximising $v$ subject to $A^\top x\ge e,e^\top x=1/v,x\ge 0$ where $x=p/v$.
+This is equivalent to minimising $e^\top x$ subject to $A^\top x\ge e,x\ge 0$ which is a form where we can apply simplex algorithm to.
+Note that its dual problem is maximising $e^\top y$ subject to $Ay\le e,y\ge 0$ which is in a form for Phase I of the two-phase algorithm.\\
+If instead $\min_{i,j}a_{i,j}\le 0$, we can still use the same idea.
+Just find some $k$ such that $a'_{i,j}=a_{i,j}+k>0$ for all $i,j$ and roll out the same algorithm on $A'=(a'_{i,j})$.
+Then the optimal strategy of $A,A'$ would be the same and the new value $v'$ would satisfy $v=v'-k$ where $v$ is the value of the original game.
+\begin{example}
+    Consider the game of Rock-Paper-Scissors, i.e.
+    $$A=\begin{pmatrix}
+        0&-1&1\\
+        1&0&-1\\
+        -1&1&0
+    \end{pmatrix}$$
+    Then we consider the modified game
+    $$A'=\begin{pmatrix}
+        2&1&3\\
+        3&2&1\\
+        1&3&2
+    \end{pmatrix}$$
+    where $k=2$.
+    So the problem of Player II is to maximise $y_1+y_2+y_3$ subject to
+    $$\begin{cases}
+        2y_1+y_2+3y_3\le 1\\
+        3y_1+2y_2+y_3\le 1\\
+        y_1+3y_2+2y_3\le 1\\
+        y_1,y_2,y_3\ge 0
+    \end{cases}$$
+    So the initial simplex tableau is
+    $$\begin{array}{c|cccccc|c}
+        &&&&\ast&\ast&\ast&\\
+        &y_1&y_2&y_3&z_1&z_2&z_3&\\ \hline
+        z_1&2&1&3&1&0&0&1\\
+        z_2&3&2&1&0&1&0&1\\
+        z_3&1&3&2&0&0&1&1\\ \hline
+        \text{Payoff}&1&1&1&0&0&0&0
+    \end{array}$$
+    and the final tableau would be
+    $$\begin{array}{c|cccccc|c}
+        &\ast&\ast&\ast&&&&\\
+        &y_1&y_2&y_3&z_1&z_2&z_3&\\ \hline
+        y_3&0&0&1&7/18&-5/18&1/18&1/6\\
+        y_1&1&0&0&1/18&7/18&-5/18&1/6\\
+        y_2&0&1&0&-5/18&1/18&7/18&1/6\\ \hline
+        \text{Payoff}&0&0&0&-1/6&-1/6&-1/6&-1/2
+    \end{array}$$
+    Therefore $v'=2$, so $v=0$.
+\end{example}

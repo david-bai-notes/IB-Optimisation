@@ -1,0 +1,222 @@
+\section{Convex Optimisation}
+Consider the simple problem of minimizing $f(x)$ subject to $a\le x\le b$ in the case where $f:\mathbb R\to\mathbb R$ is twice differentiable.
+\begin{theorem}
+    If $x^\star\notin \{a,b\}$ is an optimal solution of the problem, then $f^\prime(x^\star)=0$.
+\end{theorem}
+\begin{proof}
+    For sufficiently small $\epsilon>0$ we can have both $x^\star-\epsilon$ and $x^\star+\epsilon$ are feasible (a fancy way of saying $(x^\star-\epsilon,x^\star+\epsilon)\subset [a,b]$), then by optimality
+    $$\frac{f(x^\star)-f(x^\star-\epsilon)}{\epsilon}\le0\le\frac{f(x^\star+\epsilon)-f(x)}{\epsilon}$$
+    Sending $\epsilon\to0$ gives the result.
+\end{proof}
+As well known, there is a partial converse to this theorem.
+\begin{theorem}[Sufficient Condition for Optimality]
+    Suppose $x^\star$ is feasible and $f^\prime(x^\star)=0$.
+    If $f^{\prime\prime}\ge 0$ for all feasible $x$, then $x^\star$ is optimal.
+\end{theorem}
+\begin{proof}
+    By Taylor's Theorem (used correctly!), let $x$ be a feasible solution, then
+    $$f(x)=f(x^\star)+f^\prime(x^\star)(x-x^\star)+\frac{1}{2}f^{\prime\prime}(\xi)(x-x^\star)^2$$
+    for some $\xi$ in between $x$ and $x^\star$.
+    As $f^\prime(x^\star)=0$ and $f^{\prime\prime}(\xi)\ge 0$ by assumption, $f(x)\ge f(x^\star)$.
+\end{proof}
+The one-dimensional optimisation problems are widely studied and there is not much point to continue talking about it.
+Let's move on to higher dimensions.
+As it turns out, convexity helps a lot on problems without a functional constraint.
+\subsection{General Ideas on Convexity}
+Notationally, for a differentiable function $f:\mathbb R^n\to\mathbb R$, we write $Df$ as its gradient and, when $f$ is twice differentiable, $D^2f$ as its Hessian.
+Recall that the Hessian is symmetric at $x$ when all the second order partial derivatives are continuous at $x$.
+\begin{definition}
+    A set $X\subset\mathbb R^n$ is convex if for every pair of points $x,y\in X$ and number $0<p<1$ we have $px+(1-p)y\in X$.\\
+    Loosely speaking, the line segment joining $x$ and $y$ is still in $X$.
+\end{definition}
+One should note that our solution to the previous one dimensional optimisation problem somehow depends on the convexness of the contraint set.
+\footnote{Of course, even if it is not, we can sometimes produce similar results as well}
+\begin{definition}
+    Let $X\subset\mathbb R^n$ be convex.
+    A function $f:X\to\mathbb R$ is convex if for every pair of points $x,y\in X$ and $p\in (0,1)$,
+    $$f(px+(1-p)y)\le pf(x)+(1-p)f(y)$$
+\end{definition}
+Respectively, a function is concave if its negative is convex.
+This definition is intuitive in one dimension, but might not be that easy to illustrate in higher dimensions on first sight.
+We therefore need the following reformulation of the idea.
+\begin{theorem}[Supporting Hyperplane]\label{hyperplane}
+    Let $X\subset\mathbb R^n$ be convex.
+    The function $f:X\to\mathbb R$ is convex iff for every $x\in X$ there exists a vector $\lambda(x)\in\mathbb R^n$ such that
+    $$f(y)-f(x)\ge\lambda(x)^\top(y-x)$$
+    for all $y\in X$.
+\end{theorem}
+\begin{remark}
+    If $f$ is also differentiable, then we can take $\lambda(x)=Df(x)$.
+\end{remark}
+One can picture it as if the hyperplane produced by $\lambda(x)$ touches and supports the high-dimensional object that is the graph of the function.
+This is the origin of the name.\\
+We will prove the case when $f$ is differentiable, but the general case is also true.
+\begin{proof}
+    Almost immediate but let's write this out.
+    First suppose $\lambda(x)$ exists for all $x$.
+    Fix $y,z\in X$ and $p\in (0,1)$ and let $x=py+(1-p)z$, then
+    $$f(y)-f(x)\ge\lambda(x)^\top(y-x),f(z)-f(x)\ge\lambda(x)^\top(z-x)$$
+    So
+    $$pf(y)+(1-p)f(z)\ge\lambda(x)^\top(py+(1-p)z-x)+f(x)=f(x)$$
+    Conversely, if $f$ is convex, we can just take $\lambda(x)=Df(x)$.
+\end{proof}
+Hence, for the problem of minimising $f(x)$ subject to $x\in X$ where $X$ is convex and $f:X\to\mathbb R$ is differentiable, we have
+\begin{theorem}
+    Suppose $x^\star$ is feasible and $Df(x^\star)=0$.
+    If $f$ is convex, then $x^\star$ is optimal.
+\end{theorem}
+\begin{proof}
+    Suppose $x$ is feasible, then by convexity of $f$,
+    $$f(x)-f(x^\star)\ge(x-x^\star)^\top Df(x^\star)=0$$
+    which is what we wanted.
+\end{proof}
+\begin{definition}
+    A symmetric $n\times n$ matrix $A$ is non-negative definite if for every $x\in\mathbb R^n$ we have $x^\top Ax\ge 0$.
+\end{definition}
+\begin{theorem}
+    Let $X\subset\mathbb R^n$ be convex and suppose $f:X\to\mathbb R^n$ is $C^2$.
+    If $D^2f$ is nonnegative definite for all $x$, then $f$ is convex.
+\end{theorem}
+\begin{proof}
+    For any $x,y\in X$ we have, by Taylor's Theorem that
+    $$f(y)=f(x)+(y-x)^\top Df(x)+\frac{1}{2}(y-x)^\top D^2f(\xi)(y-x)$$
+    where $\xi=px+(1-p)y$ for some $p\in(0,1)$.
+    Therefore $f(y)-f(x)\ge Df(x)^\top(y-x)$, hence it is convex.
+\end{proof}
+\begin{definition}
+    Given a convex set $X\subset\mathbb R^n$, a function $f:X\to\mathbb R$ is strictly convex if for every $x,y\in X$ where $x\neq y$ and every number $p\in (0,1)$ we have
+    $$f(px+(1-p)y)<pf(x)+(1-p)f(y)$$
+\end{definition}
+\begin{definition}
+    An $n\times n$ matrix $A$ is positive definite if $x^\top Ax>0$ for all $x\in\mathbb R^n\setminus\{0\}$.
+\end{definition}
+\begin{theorem}
+    Suppose $f:X\to\mathbb R$ is twice differentiable.
+    If $D^2f$ is positive definite over all of $X$, then $f$ is strictly convex.
+\end{theorem}
+\begin{proof}
+    Same idea as in the ordinary convex case.
+\end{proof}
+\begin{theorem}[Uniqueness of Optimal Solutions]
+    Suppose $x^\star$ and $y^\star$ are optimal solutions to the problem of minimising $f(x)$ subject to $x\in X$ with $X$ convex and $f$ strictly convex, then $x^\star=y^\star$.
+\end{theorem}
+\begin{proof}
+    If $x^\star\neq y^\star$, then let $z=(x^\star+y^\star)/2$, then
+    $$f(z)<\frac{1}{2}f(x^\star)+\frac{1}{2}f(y^\star)=f(x^\star)$$
+    Contradiction.
+\end{proof}
+\begin{definition}
+    A function $f:X\to\mathbb R$ is strongly convex if there exists a constant $m>0$ such that the function $x\mapsto f(x)-m\|x\|^2/2$ is convex.
+\end{definition}
+This defintion is certainly strange and unintuitive, but as we proceed, we will unveil the reason to introduce this notion.
+\begin{theorem}
+    Suppose $f$ is twice differentiable.
+    Then $f$ is strongly convex if there exists $m>0$ such that for all $x\in X$ the matrix $D^2f(x)-mI$ is non-negative definite.
+    Equivalently, $z^\top D^2f(x)z\ge m\|z\|^2$ for all $z\in\mathbb R^n$.
+\end{theorem}
+\begin{proof}
+    Obvious.
+\end{proof}
+One can check that strongly convex functions are also strictly convex.
+\begin{theorem}[Existence of an Optimal Solution]
+    Suppose $X\subset\mathbb R^n$ is closed and $f$ is strongly convex, then there exists an optimal solution to the problem of minimising $f(x)$ subject to $x\in X$.
+\end{theorem}
+\begin{proof}
+    Let $g(x)=f(x)-m\|x\|^2/2$ where $m>0$ such that $g$ is convex, then there is a vector $\lambda=\lambda(0)$ such that
+    $$g(x)\ge g(0)+\lambda^\top x\ge g(0)-\|\lambda\|\|x\|$$
+    by Cauchy-Schwartz.
+    So for $\|x\|>R=2\|\lambda\|/m$ we have $f(x)>f(0)$ by rearranging.
+    So our problem reduces to minimising $f(x)$ subject to $x\in X\cap B$ where $B$ is the closed ball of radius $R$.
+    But $X\cap B$ is closed and bounded, hence is compact, therefore $f$ attains a minimum somewhere in it, which is the optimal sulution we want.
+\end{proof}
+\begin{theorem}[Gradient Lower Bound]\label{gradient_lower_bound}
+    Suppose $f:X\to\mathbb R$ is differentiable and strongly convex with constant $m>0$, then
+    $$\|Df(x)\|^2\ge 2m(f(x)-f(y))$$
+    for any $x,y\in X$.
+\end{theorem}
+\begin{proof}
+    From the Theorem \ref{hyperplane},
+    $$f(y)-f(x)\ge(y-x)^\top Df(x)+\frac{m}{2}\|y-x\|^2$$
+    However, by simply conpleting the square, for any $b,z\in\mathbb R^n$,
+    $$b^\top z+\frac{m}{2}\|z\|^2\ge-\frac{\|b\|^2}{2m}$$
+    Combining the inequalities give the solution.
+\end{proof}
+\subsection{Computing the Optimal Solution}
+Our most familiar example of a convex set is $X=\mathbb R^n$.
+We want to find algorithms to compute the optimal solution in this case.
+Our first method of interest is called gradient descent.
+Suppose $f$ is differentiable.
+The rate of change of $f$ at a point $x\in\mathbb R^n$ in direction $u\in\mathbb R^n$ is
+$$\lim_{t\to 0}\frac{f(x+tu)-f(x)}{t}=u^\top Df(x)$$
+which attains minimum when $u$ is in the direction $-Df(x)$ by Cauchy-Schwartz.\\
+So our algorithm will be as follows:
+Start with an initial guess $x_0\in\mathbb R^n$ and pick a step suze $t>0$.
+For every $k\ge 0$, we use the iteration
+$$x_{k+1}=x_k-tDf(x_k)$$
+to refine our guess.
+Intuitively, this should get closer and closer to an optimal solution.
+This might or might not be true, but for a sufficiently nice function $f$ we have the following theorem:
+\begin{theorem}
+    Suppose $f$ is $C^2$ and there exists positive constants $M>m>0$ such that $mI\preceq D^2f(x)\preceq MI$ for all $x\in\mathbb R^n$.
+    Here, two symmetric matrices $A,B$ has $A\preceq B$ iff $x^\top Ax\le x^\top Bx$ for every $x\in\mathbb R^n$.
+    The lower bound, in particular, implies the strong convexity, hence existence and uniqueness of $x^\star$.
+    Then the gradient algorithm with step size $t=1/M$ has
+    $$f(x_k)-f(x^\star)\le\left( 1-\frac{m}{M} \right)^k(f(x_0)-f(x^\star))$$
+\end{theorem}
+\begin{proof}
+    Fix $x,y\in\mathbb R^n$, then by Taylor's Theorem, there is some $p\in (0,1)$ such that for $\xi=px+(1-p)y$ we have
+    \begin{align*}
+        f(y)&=f(x)+(y-x)^\top Df(x)+\frac{1}{2}(y-x)^\top D^2f(\xi)(y-x)\\
+        &\le f(x)+(y-x)^\top Df(x)+\frac{M}{2}\|y-x\|^2
+    \end{align*}
+    Apply this inequality to $y=x_{k+1},x=x_k$ gives
+    \begin{align*}
+        f(x_{k+1})-f(x_k)&\le (x_{k+1}-x_k)^\top Df(x_k)+\frac{M}{2}\|x_{k+1}-x_k\|^2\\
+        &=\left( -t+\frac{M}{2}t^2 \right)\|Df(x_k)\|^2\\
+        &=-\frac{1}{2M}\|Df(x_k)\|^2\\
+        &\le-\frac{m}{M}(f(x_k)-f(x^\star))
+    \end{align*}
+    Rearranging gives
+    $$f(x_{k+1})-f(x_k)\le\left( 1-\frac{m}{M} \right)(f(x_k)-f(x^\star))$$
+    Using this recursively gives the estimate we need.
+\end{proof}
+This is certainly a very nice method since the rate of convergence we arrive at looks quite promising.
+There is, of course, a better method similar to our familiar formualtion of Newton's method of finding root (since very roughly speaking we are finding a root of the derivative) but in high dimensions.
+To confuse people, we shall also call this Newton's method.\\
+Suppose $f$ is $C^2$ and let $x_0$ be an initial guess for the optimiser, then by Taylor's Theorem,
+$$f(x)\approx f(x_0)+(x-x_0)Df(x_0)+\frac{1}{2}(x-x_0)^\top D^2f(x_0)(x-x_0)$$
+as $x\to x_0$ due to the continuity of $D^2f$.
+Minimising the quadratic term on the right yields the approximation
+$$x^\star\approx x_0-(D^2f(x_0))^{-1}Df(x_0)$$
+Formally, we are referring to the recursion
+$$x_{k+1}=x_k-(D^2f(x_0))^{-1}Df(x_0)$$
+As before, we want to know if it works.
+\begin{definition}
+    Let $A$ be an $n\times n$ matrix.
+    We define the matrix norm $\|A\|$ as
+    $$\|A\|=\inf\{a\ge 0:\forall z\in\mathbb R^n,\|Az\|\le a\|z\|\}=\sup_{\|z\|=1}\|Az\|$$
+    In particular, if $A$ is nonnegative definite, then $\|A\|$ is the smallest eigenvalue of $A$.
+\end{definition}
+\begin{theorem}
+    Suppose $f$ is twice differentiable and there exists constants $m,L>0$ with $D^2f(x)\succeq mI$ (so $f$ is strongly convex) and
+    $$\forall x,y\in\mathbb R^n,\|D^2f(x)-D^2f(y)\|\le L\|x-y\|$$
+    (so $D^2f$ is $L$-Lipschitz), then Newton's method guarantees that
+    $$f(x_k)-f(x^\star)\le \frac{2m^3}{L^2}\left(\frac{L}{2m^2}\|Df(x_0)\|\right)^{2^{k+1}}$$
+\end{theorem}
+Note that this convergence rate is way quicker than using gradient descent.
+\begin{proof}
+    Denote $\Delta x_k=x_{k+1}-x_k=-(D^2f(x_0))^{-1}Df(x_0)$, then we have
+    \begin{align*}
+        \|Df(x_{k+1})\|&=\|Df(x_{k+1})-Df(x_k)-D^2f(x_k)\Delta x_k\|\\
+        &=\left\|\int_0^1(D^2f(x_k+t\Delta x_k)-D^2(x_k))\Delta x_k\,\mathrm dt\right\|\\
+        &\le\int_0^1\|(D^2f(x_k+t\Delta x_k)-D^2(x_k))\Delta x_k\|\,\mathrm dt\\
+        &\le L\|\Delta x_k\|^2\int_0^1t\,\mathrm dt\\
+        &=\frac{1}{2}L\|(D^2f(x_0))^{-1}Df(x_0)\|^2\\
+        &\le\frac{L}{2m^2}\|Df(x_k)\|^2
+    \end{align*}
+    Note here that we have used the fact that $A\succeq mI\implies \|A^{-1}\|\le 1/m$ which is quite obvious.
+    Applying this inequality recursively yields
+    $$\sqrt{2m(f(x_k)-f(x^\star))}\le\|Df(x_k)\|\le\frac{2m^2}{L}\left( \frac{L}{2m^2}\|Df(x_0)\| \right)^{2^k}$$
+    by Theorem \ref{gradient_lower_bound}.
+    Rearranging shows what we want.
+\end{proof}

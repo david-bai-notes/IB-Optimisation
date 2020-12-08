@@ -1,0 +1,386 @@
+\section{Linear Programming}
+Recall that a linear program is the maximisation of $c^\top x$ subject to $Ax\le b,x\ge 0$, where $c\in\mathbb R^n$, $A$ is an $m\times n$ matrix and $b\in\mathbb R^m$.
+We also know its dual problem in the form of minimising $b^\top\lambda$ subject to $A^\top\lambda\ge c,\lambda\ge 0$.
+\subsection{The Fundamental Theorem}
+\begin{theorem}[Fundamental Theorem of Linear Programming]
+    Consider the primal problem stated.
+    A vector $x^\star\in\mathbb R^n$ is optimal for the primal problem iff there is some vector $\lambda^\star\in\mathbb R^m$ such that:\\
+    1. $x^\star$ is feasible for the primal problem.\\
+    2. $\lambda^\star$ is feasible for the dual problem.\\
+    3. $(b-Ax^\star)^\top\lambda^\star=0=(c-A^\top\lambda^\star)^\top x^\star$ (i.e. the complementary slackness).\\
+    Also, if these are true, then $\lambda^\star$ is optimal for the dual problem, and $c^\top x^\star=b^\top\lambda^\star$.
+\end{theorem}
+\begin{proof}
+    For the `if' direction, note that if $x,\lambda$ are feasible for the primal and dual problems, then by Theorem \ref{weak_dual}, $c^\top x\le b^\top\lambda$.
+    But if $x^\star$ and $\lambda^\star$ satisfy complementary slackness, $c^\top x^\star=b^\top\lambda^\star$, consequently $c^\top x\le b^\top\lambda^\star\le c^\top x^\star$ for all feasible $x$ and $b^\top\lambda\ge c^\top x^\star=b^\top\lambda^\star$ for all feasible $\lambda$.
+    Hence $x^\star$ and $\lambda^\star$ are optimal for their respective problems.\\
+    For the ``only if'' direction, note that the objective function $f(x)=c^\top x$ and constraint function $g(x)=Ax$ are linear, hence are both concave and convex at the same time.
+    In particular, $f$ is concave while $g$ is convex.
+    Hence the value function of the primal function is concave, therefore Theorem \ref{lagrange_nece} guarantees the existence of $\lambda^\star$.
+\end{proof}
+\subsection{Extreme Points}
+Consider the maximisation of $\psi(x)$ subject to $x\in X$ where $X$ is convex and $\psi$ is also convex.
+In particular, for any $p\in(0,1)$,
+$$\psi(px+(1-p)y)\le p\psi(x)+(1-p)\psi(y)\le\max\{\psi(x),\psi(y)\}$$
+Hence the maximum of $\psi$ on any segment occurs at one of the endpoints.
+Therefore it is sufficient to consider the maximisation problem in the set of points in $X$ that is not contained properly in a line segment.
+\begin{definition}
+    Let $X\subset\mathbb R^n$ be a convex set.
+    A point $x\in X$ is an extreme point if the only case where there can be $y,z\in X,p\in (0,1)$ with $x=py+(1-p)z$ is when $x=y=z$.
+\end{definition}
+Extreme points are of course very useful in linear programs as linear functions are both concave and convex.
+The concavity tells us we can characterise the optimal solution via duality.
+As the set of feasible solutions is convex, the convexity tells us we only need to search for optimal solutions to the extreme points of the set of feasible solutions.
+In particular, if the linear program has an optimal solution, then it has a optimiser that is an extreme point.
+\subsection{Basic Feasible Solutions}
+As we have seen, it is helpful if we formulate linear programs in the form of inequality functional constraints.
+There is another form which we can write the linear programs in order to make it more convenient to optimise.
+\begin{definition}
+    A linear program is in standard form if the constraint can be written as $Ax=b,x\ge 0$.
+\end{definition}
+All linear programs can be put into the standard form.
+For instance, $Ax\le b,x\ge 0$ can be transformed to $Ax+z=b,x,z\ge 0$ by our previous idea of slack variables.
+Simply $Ax=b$ can be modified to $A(x-y)=b,x,y\ge 0$.
+Combining the ideas, $Ax\le b$ can be transformed to $A(x-y)+z,x,y,z\ge 0$.
+\begin{definition}
+    Given an $m\times n$ matrix $A$ with $n>m$ and $b\in\mathbb R^m$.
+    A solution $x\in\mathbb R^n$ of the equation $Ax=b$ is called basic if at most $m$ entries of $x$ are nonzero, i.e. $x_i\neq 0$ holds for at most $m$ different $i\in\{1,\ldots,n\}$.\\
+    If $x$ is a basic solution and $x\ge 0$, it is called a basic feasible solution.
+\end{definition}
+Now denote the set of feasible solutions by $C=\{x\ge 0:Ax=b\}$, then we have
+\begin{theorem}
+    If $x$ is an extreme point of $C$, then $x$ is a basic feasible solution.
+\end{theorem}
+\begin{proof}
+    We will prove the contrapositive.
+    Let $x$ be a point in $C$ that is not basic, then there are at least $m+1$ indices $i_1,\ldots,i_r$ with $x_{i_k}>0$.
+    Then the set $\{A_{i_1},\dots,A_{i_r}\}$ of columns of the matrix $A$ would be linearly dependent as $t\ge m+1$, therefore there exists $(w_1,\ldots,w_r)\neq 0$ such that $w_aA_{i_a}=0$ (summation implied).
+    We construct
+    $$z_i=\begin{cases}
+        w_k\text{, if $i=i_k$ for some $k=1,\ldots,r$}\\
+        0\text{, otherwise}
+    \end{cases}$$
+    Then $Az=0$ and $z\neq 0$, so $A(x\pm\epsilon z)=Ax=b$ for any $\epsilon$ for any $\epsilon$.
+    As $x_{i_k}>0$ for any $k$, it is possible to choose some $\epsilon>0$ such that $x\pm\epsilon z\ge 0$.
+    So $x\pm\epsilon z\in C$ and
+    $$x=\frac{1}{2}(x+\epsilon z)+\frac{1}{2}(x-\epsilon_z)$$
+    Hence $x$ is not extreme.
+\end{proof}
+This theorem has a partial converse.
+\begin{theorem}
+    Suppose that every set of $m$ columns of $A$ is linearly independent and $x$ is a basic feasible solution, then $x$ is necessarily an extreme point of $C$.
+\end{theorem}
+\begin{proof}
+    By definition, at most $m$ many indices $i$ satisfy $x_i>0$.
+    Suppose there is some $y,z\in C$ and $p\in (0,1)$ such that $x=py+(1-p)z$, then $y,z\ge 0$, so whenever $x_i=0$ we have $y_i=z_i=0$.
+    Thus there are at least $n-m$ indices $i$ satisfying $y_i=z_i=0$.
+    But also $Ay=b=Az$, so
+    $$0=A(y-z)=\sum_{i}w_iA_i$$
+    where $w=y-z$.
+    But at most $m$ entries of $w$ are nonzero while any set of $m$ columns of $A$ is linearly independent, whence we conclude $w=0$.
+    It follows that $x=y=z$.
+\end{proof}
+In conclusion, we can find the optimal solution of a linear program by checking each of the basic feasible solutions, whcih are easier to find and, more importantly, finite.
+\subsection{Algorithms for Linear Programs}
+Consider a linear program in standard form of maximising $c^\top x$ subject to $Ax=b,x\ge 0$ where $c\in\mathbb R^n,b\in\mathbb R^m$ and $A$ is an $m\times n$ matrix.
+Assume that $n>m$ and every set of $m$ columns of $A$ is linearly independent, and that the problem is non-degenerate, i.e. every basic feasible solution $x$ has exactly $m$ indices $i$ with $x_i\neq 0$.
+Our goal is to find a mechanical method of finding the optimal solution to the problem.\\
+A na\"ive method to do this is to check all extreme points of $C$.
+But we also know that extreme points are precisely the basic feasible solutions.
+Thus we can roll out an algorithm as follows:\\
+First, fix $B\subset\{1,\ldots,n\}$ with $|B|=m$ write and $N=\{1,\ldots,n\}\setminus B$.
+Such a $B$ is called a basis of the solution.
+Suppose $B=\{i_1,\ldots,i_m\}$, then we define $A_B=(A_{i_1}\ldots A_{i_m})$ which is an invertible matrix by assumption.
+For any $x\in\mathbb R^n$, denote $x_B=(x_{i_1},\ldots,x_{i_m})^\top$.
+The quantities $c_B,A_N,x_N,c_N$ are defined similarly.\\
+Our aim is to find a basic solution of $Ax=b$.
+We can write the problem instead in the form $A_Bx_B+A_Nx_N=b$.
+Set $x_N=0$ shall yield $x_B=A_B^{-1}b$ as $A_B$ is invertible.
+By a rearrangement of coordinate we can write the solution as
+$$x=\begin{pmatrix}
+    x_B\\
+    x_N
+\end{pmatrix}=\begin{pmatrix}
+    A_B^{-1}b\\
+    0
+\end{pmatrix}$$
+which is basic.
+Now $x$ is feasible iff $A_B^{-1}b\ge0$ (which can be checked).
+Assuming $x$ is a basic feasible solution, then we can just compute the objective function $c^\top x=c_B^\top x_B$.
+Repeat this procedure for all possible choices of $B$ gives a list of all basic feasible solutions and the value of objective function evaluated there.
+This is a finite set, so we can find its maximiser which is the solution to the problem.\\
+There are some issues with this approach.
+Firstly, if $n$ is large, the number of choices of $B$, that is $\binom{n}{m}$, would grow very fast, making it more computationally complex.
+Also, this method assumed the existence of maximiser which is not always the case.
+Our idea algorithm should certainly detect it when a maximiser does not exist, i.e. the problem is unbounded.\\
+There is a better method to accomplish what we wanted.
+We also use the idea of computing the basic feasible solutions like above, but we will try not to evaluate all candidate solutions.
+By calculation we can show that the dual problem is to minimise $b^\top\lambda$ subject to $A^\top\lambda\ge c$.
+So by the fundamental theorem, a feasible $x^\star$ is optimal for our primal problem iff there is a feasible (in the dual problem) Lagrange multiplier $\lambda^\star\in\mathbb R^m$ such that complementary slackness $(c-A^\top\lambda^\star)^\top x^\star=0$ is satisfied.\\
+Consider a basic feasible solution $x=(A_B^{-1}b,0)^\top$, then if it is optimal, then there is some $\lambda$ satisfying complementary slackness
+$$0=(c-A^\top\lambda)^\top x=(c_B-A_B^\top\lambda)^\top x_B$$
+But no index of $x_B$ is zero by assumption, hence $\lambda=(A_B^\top)^{-1}c_B$.
+So we can roll out our algorithm in the same way as before, but each time we check as well the feasibility of $\lambda$.
+We can stop if such $\lambda$ is feasible, because by the fundamental theorem we have already found the optimal solution.
+We also know when the problem is unbounded, that is when none of the basic feasible solution gives a feasible $\lambda$.
+\subsection{The Simplex Algorithm}
+A third way, which is known as the simplex algorithm, is a yet faster method.
+So far our algorithms depend on iterating all candidates for basic feasible solutions randomly, which inspires us to find the solutions in a particular order to speed up the process.
+In particular, if our current basic feasible solution does not work, we will want to find the next basic feasible solution that increases the objective function.\\
+We start with an initial basic feasible solution $x_0$ whose components with indices in $B_0\subset\{1,\ldots,n\}$ are nonzero.
+Write $N_0=\{1,\ldots,n\}\setminus B_0$.
+We can associate a Lagrange multiplier $\lambda_0$ by complementary slackness, i.e. one that satisfies $(c-A^\top\lambda_0)_{B_0}=0$.
+In particular, $(c-A^\top\lambda_0)^\top x_0=0$, so $c^\top x_0=b^\top\lambda_0$.
+Let $\mu_0=c-A^\top\lambda_0$.
+If $\mu_0\le 0$ then we are done and $x_0$ is optimal, otherwise we choose $x_1$ by the following:
+\begin{claim}
+    Suppose there is some $j\in N_0$ such that $\mu_{j,0}>0$ and there is an $i\in B_0$ such that there is a basic feasible solution $x_1$ with basis $B_1=B_0\cup\{j\}\setminus\{i\}$.
+    Then
+    $$c^\top x_1=c^\top x_0+\mu_{j,0}x_{j,1}>c^\top x_0$$
+\end{claim}
+\begin{proof}
+    If $x$ is any feasible solution, then
+    $$c^\top x=c^\top x+\lambda_0^\top(b-Ax)=b^\top\lambda_0+(c-A^\top\lambda_0)^\top x=c^\top x_0+\sum_{k\in N_0}\mu_{k,0}x_k$$
+    as $\mu_{k,0}=0$ for any $k\in B_0$.
+    The sum is then
+    $$\sum_{k\in N_0}\mu_k x_{k,1}=\sum_{k\in N_1}\mu_kx_{k,1}+\mu_jx_{j,1}-\mu_ix_{i,1}=\mu_jx_{j,1}$$
+    Also $x_{j,1}>0$ by non-degeneracy assumption.
+    The claim follows.
+\end{proof}
+\begin{proposition}\label{simplex_unbounded}
+    Suppose there is a $j\in N_0$ such that $\mu_{j,0}>0$ and for every $i\in B_0$ the basis solution with basis $B_1=B_0\cup\{j\}\setminus\{i\}$ is infeasible, then the problem is unbounded.
+\end{proposition}
+So if no feasible $x_1$ exists, then we can stop the algorithm and conclude that the problem is unbounded.
+Otherwise, we can repeat the algorithm again and again, and stop either at a basic feasible solution whose accompanied Lagrange multiplier is feasible in the dual problem or at a point where we can conclude the unboundedness of the problem.
+We may, however, have to go through all basic feasible solutions if we start with a bad guess, but at least we know after each step we shall obtain a better solution candidate.
+\subsection{Simplex Algorithm in Action}
+We are still considering the problem of maximising $c^\top x$ subject to $Ax=b,x\ge 0$, assuming the same things we assumed previously.
+Suppose we know one basic feasible solution $x_0$, we want to use the simplex algorithm.
+Before that, we need to do some pre-processing of the problem.
+Let $B$ be the basis of $x_0$ and $N=\{1,\ldots,n\}\setminus B$ as usual.
+For $x\in\mathbb R^n$, we rearrange the components $x=(x_B,x_N)^\top$ as usual.
+Furthermore, the objective function can be written as
+$$c^\top x=c^\top x_0+\mu_{N,0}^\top x_N$$
+for feasible $x$.
+where $\mu_0=c-A^\top\lambda_0$ and $\lambda_0=(A_B^\top)^{-1}c_B$ is the Lagrange multiplier obtained by complementary slackness.
+The set of feasible solutions is then subject to the condition
+$$x_B+A_B^{-1}A_Nx_N=x_{B,0},x_B,x_N\ge 0$$
+To use the simplex algorithm, we first formulate the initial \text{simplex tableau} as the $(m+1)\times(n+1)$ matrix (in practice some of the columns are shuffled due to the position of the basis)
+$$\Gamma=\begin{pmatrix}
+    I&A_B^{-1}A_N&x_{B,0}\\
+    0&\mu_{N,0}^\top&-c^\top x_0
+\end{pmatrix}$$
+where $I$ is the $m\times m$ identity.
+We first test for optimality of $x_0$.
+If $\mu_0\le 0$, then we can stop as it would be optimal due to the fundamental theorem.
+Otherwise, we choose the pivot column, i.e. $j\in N$ such that $\mu_{j,0}>0$.
+a rule of thumb is to pick $j$ such that $\mu_{j,0}$ is the largest.
+We also pick the pivot row by looking within the pivot column $j$ and find the $i\in B$ which minimises $x_{i,0}/\Gamma_{i,j}$ over all $i\in B$ with $\Gamma_{i,j}>0$.
+If this cannot be done, i.e. $\Gamma_{i,j}\le 0$ for all $i$, then we can stop as it indicates the unboundedness of the problem.\\
+Assume we go through these steps without stopping the algorithm, we perform the pivot operation to move to the next basic feasible solution.
+To do this, we scale row $i$ with $1/\Gamma_{i,j}$ and replace row $k$ with
+$$(\text{old row }k)-(\text{old row }i)\times\frac{\Gamma_{k,j}}{\Gamma_{i,j}}$$
+for all $k\neq i$ and run the algorithm on this new simplex tableau.
+\begin{remark}
+    1. For the initial basic feasible solution we have $x_{i,0}>0$ and $x_{j,0}=0$, whilst for the next basic feasible solution $x_{i,1}=0$ and $x_{j,1}=x_{i,0}/\Gamma_{i,j}>0$.\\
+    2. The pivot operation is actually just a Gaussian elimination.\\
+    3. The $\Gamma$ we obtained after the pivot operation is the same $\Gamma$ had we start with $x_1$ instead.\\
+    4. Suppose $\Gamma_{i,j}\le 0$ for all $i\in B$, then for $i\in B$ and for $r>0$ let $x_r=x_0+r(\delta_j-\Gamma_{i,j}\delta_i)$ where $\delta_k$ is the $k^{th}$ standard basis.
+    Then the transformation $x_0\mapsto x_r$ replaces $x_{i,0}$ with $x_{i,r}=x_{i,0}-r\Gamma_{i,j}$ and $x_{j,0}=0$ with $x_{j,r}=r$ and leaves other entries unchanged.
+    Now $x_r$ is feasible since $x_r\ge 0$ and
+    $$\begin{pmatrix}
+        I&A_B^{-1}A_N
+    \end{pmatrix}x_r=x_0$$
+    But $c^\top x_r=c^\top x_0+r\mu_{j,0}\to\infty$ as $r\to\infty$, so the problem is unbounded.
+    This proves Proposition \ref{simplex_unbounded}.
+\end{remark}
+\begin{example}
+    Consider the linear program to maximise $3x_1+2x_2$ subject to
+    $$\begin{cases}
+        2x_1+x_2\le 4\\
+        2x_1+3x_2\le 6\\
+        x_1,x_2\ge 0
+    \end{cases}$$
+    Then its dual problem is to minimise $4\lambda_1+6\lambda_2$ subject to
+    $$\begin{cases}
+        2\lambda_1+2\lambda_2\ge 3\\
+        \lambda_1+3\lambda_2\ge 2\\
+        \lambda_1,\lambda_2\ge 0
+    \end{cases}$$
+    By introducing slack variables, the primal problem has constraint
+    $$\begin{cases}
+        2x_1+x_2+z_1=4\\
+        2x_1+3x_2+z_2=6\\
+        x_1,x_2,z_1,z_2\ge 0
+    \end{cases}$$
+    and the dual problem has constraint
+    $$\begin{cases}
+        2\lambda_1+2\lambda_2-v_1= 3\\
+        \lambda_1+3\lambda_2-v_2= 2\\
+        \lambda_1,\lambda_2,v_1,v_2\ge 0
+    \end{cases}$$
+    So the complementary slackness translates to
+    $$x_1v_1=x_2v_2=\lambda_1z_1=\lambda_2z_2=0$$
+    Running the simplex algorithm shall yield the maximiser $x_1=3/2,x_2=1$ with then corresponding dual solution $\lambda_1=5/4,\lambda_2=1/4$.
+    We start with the simplex tableau (asterisked columns are where the identity matrix and the zero vectors are at)
+    $$\begin{array}{c|cccc|c}
+        &&&\ast&\ast&\\
+        &x_1&x_2&z_1&z_2&\\ \hline
+        z_1&2&1&1&0&4\\
+        z_2&2&3&0&1&6\\ \hline
+        \text{payoff}&3&2&0&0&0
+    \end{array}$$
+    Now the payoff row is not non-positive, hence we have not arrived at the optimal solution.
+    As $3$ is the largest payoff entry, we let $x_1$ enter the basis, so the first column is the pivot column.
+    We choose the first row to be the pivot row.
+    The the pivot operation yields the next simplex tableau:
+    $$\begin{array}{c|cccc|c}
+        &\ast&&&\ast&\\
+        &x_1&x_2&z_1&z_2&\\ \hline
+        x_1&1&1/2&1/2&0&2\\
+        z_2&0&2&-1&1&2\\ \hline
+        \text{payoff}&0&1/2&-3/2&0&-6
+    \end{array}$$
+    It is still not optimal due to the positive $1/2$ entry in the payoff row.
+    So this time the pivot column is the second column and we choose the second row as the pivot row.
+    This gives us
+    $$\begin{array}{c|cccc|c}
+        &\ast&\ast&&&\\
+        &x_1&x_2&z_1&z_2&\\ \hline
+        x_1&1&0&3/4&-1/4&3/2\\
+        x_2&0&1&-1/2&1/2&1\\ \hline
+        \text{payoff}&0&0&-5/4&-1/4&-13/2
+    \end{array}$$
+    which we realise is optimal as the payoff is nonpositive.
+\end{example}
+\begin{remark}
+    1. If the linear program is a minimisation instead of a maximisation problem, then the stopping criterion would be the tableau being nonnegative.\\
+    2. When the problem is of the form like above, i.e. maximising $c^\top x$ subject to $Ax\le b,x\ge 0$, one observe that the coefficient of the payoff row under the slack variables are minus the corresponding dual variables (via complementary slackness).
+    For the final tableau, the feasible dual variables are the Lagrange multipliers for the problems.\\
+    3. In the example, we have
+    $$\begin{pmatrix}
+        3/4&-1/4\\
+        -1/2&1/2
+    \end{pmatrix}\begin{pmatrix}
+        2&1&1&0&4\\
+        2&3&0&1&6
+    \end{pmatrix}=\begin{pmatrix}
+        1&0&3/4&-1/4&3/2\\
+        0&1&-1/2&1/2&1
+    \end{pmatrix}$$
+    Hence the perturbed problem of maximising $3x_1+2x_2$ subject to
+    $$\begin{cases}
+        2x_1+x_2\le 4+\epsilon_1\\
+        2x_1+3x_2\le 6+\epsilon_2\\
+        x_1,x_2\ge 0
+    \end{cases}$$
+    with $\epsilon_{1,2}$ small yields the final tableau
+    $$\begin{array}{c|cccc|c}
+        &\ast&\ast&&&\\
+        &x_1&x_2&z_1&z_2&\\ \hline
+        x_1&1&0&3/4&-1/4&3/2+3\epsilon_1/4-\epsilon_2/4\\
+        x_2&0&1&-1/2&1/2&1-\epsilon_1/2+\epsilon_2/2\\ \hline
+        \text{payoff}&0&0&-5/4&-1/4&-13/2-5\epsilon_1/4-\epsilon_2/4
+    \end{array}$$
+    Therefore it has maximiser at
+    $$x_1=\frac{3}{2}+\frac{3}{4}\epsilon_1-\frac{1}{4}\epsilon_1,x_2=1-\frac{1}{2}\epsilon_1+\frac{1}{2}\epsilon_2, 3x_1+2x_2=\frac{13}{2}+\frac{5}{4}\epsilon_1+\frac{1}{4}\epsilon_2$$
+    given that they are feasible (possible for small enough $\epsilon_{1,2}$).
+\end{remark}
+\subsection{The Two-Phase Algorithm}
+Again our problem is to maximise $c^\top x$ subject to $Ax=b,x\ge 0$.
+In order to roll out the simplex algorithm, we need at least one basic feasible solution.
+It is certainly tempting if we can know a way that can yield one efficiently.\\
+There are a lot of approaches, for example just pick a basis and computed $A_B^{-1}b$ (using the notations we introduced earlier).
+This is certainly a sufficient algorithm, but this might not be very efficient.\\
+Consider a new problem of minimising $e^\top y$ subject to $Ax+y=b,x,y\ge 0$ where $e=(1,\ldots,1)^\top$.
+The variable $y$ here is called an artificial variable.
+Now $(x,y)=(0,b)$ is a basic feasible solution for this problem, so we can apply the simplex algorithm which must terminate at some $(x,y)=(x_0,0)$ given that the original problem is feasible.
+Then $x_0$ has to be basic feasible for the original problem.
+So we can modify the algorithm by adding a first phase to compute one basic feasible solution first (called Phase I) and then apply the simplex algorithm to it (which is Phase II).
+\begin{example}
+    Consider the problem to maximise $x_1-3x_2+5x_3$ subject to
+    $$\begin{cases}
+        x_1+x_2+x_3\le 30\\
+        -x_2+2x_3=20\\
+        -x_1+2x_2+x_3\ge 40\\
+        x_1,x_2,x_3\ge 0
+    \end{cases}$$
+    we introduce slack variables as usual to transform the constraint to
+    $$\begin{cases}
+        x_1+x_2+x_3+z_1=30\\
+        -x_2+2x_3=20\\
+        -x_1+2x_2+x_3-z_2=40\\
+        x_1,x_2,x_3,z_1,z_2\ge 0
+    \end{cases}$$
+    Add in artificial variable $y_1,y_2$,
+    $$\begin{cases}
+        x_1+x_2+x_3+z_1=30\\
+        -x_2+2x_3+y_1=20\\
+        -x_1+2x_2+x_3-z_2+y_2=40\\
+        x_1,x_2,x_3,z_1,z_2,y_1,y_2\ge 0
+    \end{cases}$$
+    In some sense we should have added a variable $y_3$ on the first expression as well, but it is actually redundant as we already have an nonnegative expression.
+    We solve this new problem with the simplex algorithm, with the initial tableau:
+    $$\begin{array}{c|ccccccc|c}
+        &&&&\ast&&\ast&\ast&\\
+        &x_1&x_2&x_3&z_1&z_2&y_1&y_2&\\ \hline
+        z_1&1&1&1&1&0&0&0&30\\
+        y_1&0&-1&2&0&0&1&0&20\\
+        y_2&-1&2&1&0&-1&0&1&40\\ \hline
+        \text{Phase II}&1&-3&5&0&0&0&0&0\\ \hline
+        \text{Phase I}&0&0&0&0&0&1&1&0
+    \end{array}$$
+    We have put the objective functions of both phases so that we can manipulate both simultaneously so that when Phase I is completed, we can immediately go to Phase II.\\
+    Now the identity part of the upper part of the tableau does not correspond to the zero part of the Phase I payoff, so we do a transformation to modify the tableau:
+    $$\begin{array}{c|ccccccc|c}
+        &&&&\ast&&\ast&\ast&\\
+        &x_1&x_2&x_3&z_1&z_2&y_1&y_2&\\ \hline
+        z_1&1&1&1&1&0&0&0&30\\
+        y_1&0&-1&2&0&0&1&0&20\\
+        y_2&-1&2&1&0&-1&0&1&40\\ \hline
+        \text{Phase II}&1&-3&5&0&0&0&0&0\\ \hline
+        \text{Phase I}&1&-1&-3&0&1&0&0&-60
+    \end{array}$$
+    Note that as we are encountering a minimisation problem in Phase I, our aim is to make the last row nonnegative.
+    Pivot once:
+    $$\begin{array}{c|ccccccc|c}
+        &&&\ast&\ast&&&\ast&\\
+        &x_1&x_2&x_3&z_1&z_2&y_1&y_2&\\ \hline
+        z_1&1&3/2&0&1&0&-1/2&0&20\\
+        x_3&0&-1/2&1&0&0&1/2&0&10\\
+        y_2&-1&5/2&0&0&-1&-1/2&1&30\\ \hline
+        \text{Phase II}&1&-1/2&0&0&0&-5/2&0&-50\\ \hline
+        \text{Phase I}&1&-5/2&0&0&1&3/2&0&-30
+    \end{array}$$
+    Pivot twice:
+    $$\begin{array}{c|ccccccc|c}
+        &&\ast&\ast&\ast&&&&\\
+        &x_1&x_2&x_3&z_1&z_2&y_1&y_2&\\ \hline
+        z_1&8/5&0&0&1&3/5&-1/5&-3/5&2\\
+        x_3&-1/5&0&1&0&-1/5&2/5&1/5&16\\
+        x_2&-2/5&1&0&0&-2/5&-1/5&2/5&12\\ \hline
+        \text{Phase II}&4/5&0&0&0&-1/5&-13/5&1/5&-44\\ \hline
+        \text{Phase I}&0&0&0&0&0&1&1&0
+    \end{array}$$
+    The last row is nonnegative and the objective function attains zero, so we have already achieved our aim for Phase I with the basic feasible solution shown in the tableau.
+    This produces our initial tableau for Phase II:
+    $$\begin{array}{c|ccccc|c}
+        &&\ast&\ast&\ast&&\\
+        &x_1&x_2&x_3&z_1&z_2&\\ \hline
+        z_1&8/5&0&0&1&3/5&2\\
+        x_3&-1/5&0&1&0&-1/5&16\\
+        x_2&-2/5&1&0&0&-2/5&12\\ \hline
+        \text{Phase II}&4/5&0&0&0&-1/5&-44\\
+    \end{array}$$
+    Now we are maximising, so we need to make the payoff nonpositive.
+    After the first pivoting we have
+    $$\begin{array}{c|ccccc|c}
+        &\ast&\ast&\ast&&&\\
+        &x_1&x_2&x_3&z_1&z_2&\\ \hline
+        x_1&1&0&0&5/8&3/8&5/4\\
+        x_3&0&0&1&1/8&-1/8&65/4\\
+        x_2&0&1&0&1/4&-1/4&25/2\\ \hline
+        \text{Phase II}&0&0&0&-1/2&-1/2&-45\\
+    \end{array}$$
+    which has nonpositive payoff, hence the optimal solution is at $(x_1,x_2,x_3)=(5/4,25/2,65/4)$.
+\end{example}

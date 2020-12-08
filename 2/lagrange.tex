@@ -1,0 +1,292 @@
+\section{The Lagrangian}
+\subsection{The Sufficiency Theorem}
+We now consider the general case of the constrained optimisation, without explicitly appealing to the convexity assumption.
+Suppose we want to minimise $f(x)$ subject to $g(x)=b,x\in X$, to deal with the functional constraint, we introduce the Lagrangian of the problem:
+\begin{definition}[Lagrangian]
+    The Lagrangian $L:\mathbb R^n\times\mathbb R^m\to\mathbb R$ of the problem is defined by
+    $$L(x,\lambda)=f(x)+\lambda^\top(b-g(x))$$
+    For $\lambda=(\lambda_1,\ldots,\lambda_m)^\top$, the components $\lambda_i$ constitutes the Lagrange multiplier.
+\end{definition}
+A nice theorem associated with this notion is the following:
+\begin{theorem}[The Lagrange Sufficiency Theorem]\label{lagrange_suff}
+    Let $x^\star$ be feasible for the problem.
+    Suppose there exists a $\lambda^\star\in\mathbb R^m$ such that
+    $$\forall x\in X,L(x^\star,\lambda^\star)\le L(x,\lambda^\star)$$
+    Then $x^\star$ is optimal.
+\end{theorem}
+\begin{proof}
+    For any feasible $x$ and any $\lambda\in\mathbb R^m$, we have
+    $$L(x,\lambda)=f(x)+\lambda^\top(b-g(x))=f(x)$$
+    So our assumption gives, for any feasible $x$,
+    $$f(x^\star)=L(x^\star,\lambda^\star)\le L(x,\lambda^\star)=f(x)$$
+    as desired.
+\end{proof}
+\begin{example}
+    Consider the problem of minimising $x_1^2+3x_2^2$ subject to $4x_1+x_2=7$.
+    We claim that $(12/7,1/7)$ is optimal.
+    The Lagrangian has the expression
+    $$L(x_1,x_2,\lambda)=x_1^2+3x_2^2+\lambda(7-4x_1-x_2)$$
+    Take $\lambda=6/7$, we have
+    $$L(x_1,x_2,6/7)=(x_1-12/7)^2+3(x_2-1/7)^2+3\ge 3=L(12/7,1/7,6/7)$$
+    So $(12/7,1/7)$ is optimal by the preceding theorem.
+\end{example}
+Note that our choice of multiplier $\lambda^\star=6/7$ is kind of ``out of nowhere''.
+It makes one wonder if there is a systematic method to guarantee to produce a $\lambda^\star$ that works.
+Sadly, it is not always possible to find a multiplier that works as a certificate of optimality, let alone a sufficient algorithm to compute one.
+However, inspired by the theorem, we can come up with a way to compute $\lambda^\star$ if the problem behaves sufficiently nice.\\
+If $x^\star$ and $\lambda^\star$ do exist, we must have
+$$\inf_{x\in X}L(x,\lambda^\star)=f(x^\star)>-\infty$$
+So to calculate $\lambda^\star$, we first identify the possible candidates
+$$\Lambda=\{\lambda\in\mathbb R^n:\inf_{x\in X}L(x,\lambda)>-\infty\}$$
+Then, for each $\lambda\in\Lambda$, we consider the probelm of minimising $L(x,\lambda)$ subject to $x\in X$.
+This is hopefully easiler since the functional constraint has been removed (with, of course, the trade-off of having to consider the problem for a wide range of functions).
+Denote then minimiser as $x(\lambda)$.
+We now find a $\lambda^\star\in\Lambda$ such that $x(\lambda^\star)$ is feasible.
+In general, it might not be possible to go through all these steps, but if it is possible, then $x^\star=x(\lambda^\star)$ would be guaranteed to be the optimal solution by the theorem.
+\begin{example}[Maximum Likelihood Estimator of the Multinomial Distribution]
+    Given constants $n_1,\ldots,n_k>0$, we consider the problem to maximise $\sum_in_i\log p_i$ subject to $\sum_ip_i=1,\forall i,p_i>0$.
+    The Lagrangian is
+    $$L(p,\lambda)=\lambda+\sum_{i=1}^k(n_i\log p_i-\lambda p_i)$$
+    Then easily $\Lambda=\mathbb R_{>0}$.
+    Now we have
+    $$\frac{\partial L}{\partial p_i}=\frac{n_i}{p_i}-\lambda=0\implies p_i(\lambda)=\frac{n_i}{\lambda}$$
+    But also
+    $$D^2L=\begin{pmatrix}
+        -n_1/p_1^2&0&0\\
+        0&\ddots&0\\
+        0&0&-n_k/p_k^2
+    \end{pmatrix}$$
+    which is negative definite, so we have found the maximum.
+    The constraint $\sum_ip_i=1$ gives $\lambda=\sum_in_i$, so
+    $$p_i^\star=\frac{n_i}{\sum_jn_j}$$
+    is optimal.
+\end{example}
+\subsection{Inequality Constraints}
+We can consider a somewhat more general version of the optimisation problem, where we replace the functional constraints by their inequality analog.
+For vectors $x,y$, we write $x\le y$ if $x_i\le y_i$ for each $i$.\\
+Let $f:\mathbb R^n\to\mathbb R,g:\mathbb R^n\to\mathbb R^m,X\in\mathbb R^n$.
+We want to consider the problems to minimise $f(x)$ subject to $g(x)\le b,x\in X$.
+Notice that we can actually rewrite this problem to an equality form by introducing a slack variable $z\in\mathbb R^m$ by considering the minimisation of $f(x)$ subject to $g(x)+z=b,x\in X,z\ge 0$.\\
+Then, the Lagrangian of the modified problem would be
+$$L(x,z,\lambda)=f(x)+\lambda^\top(b-g(x)-z)=f(x)+\lambda^\top(b-g(x))-\lambda^\top z$$
+Note that if some of $\lambda$ is positive then we can easily send $L$ to $-\infty$, so $\Lambda\subset\{\lambda\in\mathbb R^m:\lambda\le 0\}$.
+So if we want to use the Lagrange multiplier method, then a sign constraint is further imposed on $\lambda$.
+In particular,
+$$\Lambda=\{\lambda\in\mathbb R^m:\lambda\le 0,\inf_{x\in X}(f(x)+\lambda^\top(b-g(x)))>-\infty\}$$
+Now we proceed to the second step of using Lagrange multiplier.
+Note that for $\lambda\le 0$, we have $\inf_{z\ge 0}(-\lambda^\top z)=0$, so the optimal $z=z(\lambda)$ would satisfy the complementary slackness condition, i.e. $\lambda^\top z=0$.
+So if the $i^{th}$ Lagrange multiplier is nonzero, then $z_i=0$, so the $i^{th}$ functional constraint is tight, i.e. hold with equality.
+If the $i^{th}$ functional constraint is not tight, then $z_i>0$, thus it must be the case that $\lambda_i=0$.
+The rest of the method can then be carried on as usual.
+\begin{example}
+    Consider the minimisation of $x_1-3x_2$ subject to $x_1^2+x_2^2\le 4$ and $x_1+x_2\le 2$.
+    We introduce the slack variables $z_1,z_2\ge 0$, by which we can transform the problem to the minimisation of $x_1-3x_2$ subject to
+    $$\begin{cases}
+        x_1^2+x_2^2+z_1=4\\
+        x_1+x_2+z_2=2\\
+        z_1,z_2\ge 0
+    \end{cases}$$
+    So the Lagrangian is
+    $$L=x_1-3x_3+\lambda_1(4-x_1^2-x_2^2-z_1)+\lambda_2(2-x_1-x_2-z_2),\lambda_1,\lambda_2\le 0$$
+    Note that
+    $$D^2L=\begin{pmatrix}
+        -2\lambda_1&0\\
+        0&-2\lambda_1
+    \end{pmatrix}\succeq 0$$
+    Hence we only need $\partial L/\partial x_1=\partial L/\partial x_2=0$, whcih yields
+    $$\begin{cases}
+        1-2\lambda_1x_1-\lambda_2=0\\
+        -3-2\lambda_1x_2-\lambda_2=0
+    \end{cases}$$
+    If $\lambda_1=0$, then $\lambda_2=1$ and $\lambda_2=-3$, contradiction.
+    So $\lambda_1<0$.
+    if $\lambda_2<0$, then by complementary slackness, $z=0$, therefore
+    $$\begin{cases}
+        1-2\lambda_1x_1-\lambda_2=0\\
+        -3-2\lambda_1x_2-\lambda_2=0\\
+        x_1^2+x_2^2=4\\
+        x_1+x_2=2
+    \end{cases}$$
+    Solving this equation gives $(x_1,x_2)\in\{(2,0),(0,2)\}$, so $(x_1,x_2,\lambda_1,\lambda_2)$ is either $(2,0,1,-3)$ or $(0,2,-1,1)$, but both violates the sign constraint, which gives contradiction again.
+    Hence $\lambda_2=0$.
+    By complementary slackness $z_1=0$, so the first functional constraint is tight, hence
+    $$\begin{cases}
+        1-2\lambda_1x_1=0\\
+        -3-2\lambda_1x_2=0\\
+        x_1^2+x_2^2=4
+    \end{cases}$$
+    Solve to get $\lambda_1=-\sqrt{10}/4$ and
+    $$(x_1,x_2)=\left( -\sqrt{\frac{2}{5}},3\sqrt{\frac{2}{5}} \right)$$
+    which is feasible hence optimal.
+\end{example}
+While we can solve it, it is always good to know beforehand that this method will work.
+This brings us to the next topic on the necessity condition.
+\subsection{The Necessity Theorem}
+Let's go back to the problem of minimising $f(x)$ subject to $g(x)=b,x\in X$.
+Denote the Lagrangian by
+$$L(x,\lambda)=f(x)+\lambda^\top(b-g(x))$$
+We have already established Theorem \ref{lagrange_suff} saying that a feasible $x^\star$ is optimal if there exists some $\lambda^\star$ with $L(x^\star,\lambda^\star)\le L(x,\lambda^\star)$ for any $x\in X$.
+In particular, we have
+$$\inf_{x\in X,g(x)=b}f(x)=f(x^\star)=\inf_{x\in X}L(x,\lambda^\star)$$
+We, of course, want some useful statement on the converse of this statement.
+\begin{theorem}[Lagrangian Necessity]\label{lagrange_nece}
+    For $b\in\mathbb R^n$, let
+    $$\phi(b)=\inf_{x\in X,g(x)=b}f(x)$$
+    If $\phi$ is defined and convex, then there is a $\lambda=\lambda(b)$ with
+    $$\phi(b)=\inf_{x\in X,g(x)=b}f(x)=\inf_{x\in X}L(x,\lambda(b))$$
+    Furthermore, if $\phi$ is differentiable, then $\lambda(b)$ can be taken to be $D\phi(b)$.
+\end{theorem}
+\begin{definition}
+    Such a function $\phi(b)$ is called the value function of the family of the problems of minimising $f(x)$ subject to $g(x)=b,x\in X$.
+\end{definition}
+\begin{proof}
+    Suppose $\phi$ is convex and fix $b\in\mathbb R^m$, then by Theorem \ref{hyperplane}, there is some $\lambda\in\mathbb R^m$ (which can be taken to be $D\phi(b)$) such that
+    \begin{align*}
+        \phi(b)&=\inf_{c\in\mathbb R^m}(\phi(c)+\lambda^\top(b-c))\\
+        &=\inf_{c\in\mathbb R^m}\inf_{x\in X,g(x)=c}(f(x)+\lambda^\top(b-c))\\
+        &=\inf_{c\in\mathbb R^m}\inf_{x\in X,g(x)=c}(f(x)+\lambda^\top(b-g(x)))\\
+        &=\inf_{x\in X}L(x,\lambda)
+    \end{align*}
+    which is just what we wanted.
+\end{proof}
+\begin{remark}
+    By adding slack variables
+    $$\inf_{x\in X,g(x)\le b}f(x)=\inf_{x\in X,z\ge 0,g(x)+z=b}f(x)$$
+    We can see that the theorem can still hold when the functional constraint is an equality.
+\end{remark}
+To apply this theorem, we can require helps on determining the convexity of $\phi$.
+\begin{theorem}
+    Suppose $X$ is convex, $f$ is convex, the functional constraint is $g(x)\le b$ and $g_j$ is convex for all $1\le j\le m$, then $\phi$ is convex.
+\end{theorem}
+\begin{proof}
+    Exercise.
+\end{proof}
+\subsection{Shadow Prices}
+We can view the optimisation problem in some real-life economical setting, which gives intuition to the construction of the Lagrangian.\\
+Consider a factory owner who makes $n$ different products out of $m$ raw materials.
+He needs to choose amount $x_i$ to make of the $i^{th}$ product for each $i=1,\ldots,n$.
+Given a vector of amounts $x=(x_1,\ldots,x_n)^\top$ of products to manufacture, the factory requires the amount $g_j(x)$ of the $j^{th}$ raw material for $j=1,\ldots,m$, and the amount of available $j^{th}$ raw material available is $b_j$.
+The only nonnegative amounts of products can be produced and given the amounts $x$ of products, the profit earned is $f(x)$.\\
+Obviously, what the factory owner wants is to maximise $f(x)$ subject to $g(x)\le b,x\ge 0$.
+We let $\phi(b)$ be the maximised profit as a function of the amount of raw materials.\\
+To solve this problem, we can consider a fictional world where there is a market for the raw material with the unit price of the $j^{th}$ raw material being $\lambda_j$, then the total profit is exactly
+$$L(x,\lambda)=f(x)+\lambda^\top(b-g(x))$$
+So the problem has transformed into the maximisation problem of the Lagrangian.
+For each price vector $\lambda$, the optimal amount of products is the vector $x(\lambda)$.
+We can now find a price vector $\lambda^\star$ such that $x^\star=x(\lambda)$ is feasible.
+Such a $\lambda^\star$ is called the shadow price vector of the raw materials.
+This is the prices of the raw materials such that the maximisation problem makes no difference on whether there is such a fictional market.\\
+The supporting hyperplane can also have an economical interpretation.
+Suppose the fictional market of raw materials suddenly appears, then the factory owner would buy the basket $(\epsilon_1,\ldots,\epsilon_m)^\top$ of raw materials if $\phi(b+\epsilon)-\phi(b)\ge\lambda^\top\epsilon$, so when $\epsilon$ is small,
+$$\phi(b+\epsilon)-\phi(b)=D\phi(b)^\top\epsilon$$
+So if $\lambda_j>\partial\phi/\partial b_j$, then the factory owner should not be buying any of that raw material.
+Hence the shadow price has to be $D\phi(b)$ as before.\\
+To check that all these are consistent, we check the followings:
+The inequality constraint $g(x)\le b$ gives a sign constraint $\lambda\ge 0$, which is consistent with the assumption that price should not be negative.
+Also, if the $j^{th}$ constraint is not tight, then $g_j(x^\star)<b_j$, then the owner does not use up all the $j^{th}$ raw material, so the shadow price has $\partial\phi/\partial b_j=0$ as there is no extra profit in acquiring some more of that material.
+On the other hand, the $j^{th}$ slack variable would be positive, hence $\lambda_j=0$ by complementary slackness, which makes sense economically.
+\subsection{Duality}
+We can introduce the notion of a dual optimisation problem by a corresponding economic motivation.
+Consider the point of view of the seller of the raw materials who then buy the products produced by the factory.
+If the amount of finished products is $x$ and the price of raw materials is $\lambda$, then the seller's profit would be the negative of the profit of factory owner, which is $f(x)+\lambda^\top(b-g(x))$.
+So what the seller wants would be to minimise
+$$\sup_{x\ge 0}(f(x)+\lambda^\top(b-g(x)))$$
+\begin{definition}
+    Consider the primal problem of minimising $f(x)$ subject to $g(x)=b,x\in X$ which has Lagrangian
+    $$L(x,\lambda)=f(x)+\lambda^\top(b-g(x))$$
+    Then the set of feasible Lagrange multipliers is
+    $$\Lambda=\{\lambda\in\mathbb R^m:\inf_{x\in X}L(x,\lambda)>-\infty\}$$
+    Then the dual objective function is defined as
+    $$h:\Lambda\to\mathbb R,h(\lambda)=\inf_{x\in X}L(x,\lambda)$$
+    The dual problem of the primal problem is to maximise $h(\lambda)$ subject to $\lambda\in\Lambda$.
+\end{definition}
+\begin{remark}
+    One should note that if one need to study the dual problem of a problem with inequality constraints, then we need to introduce the slack variables first.
+    Also, we can formulate the dual problem to a maximisation problem analogously.
+\end{remark}
+\begin{theorem}[Weak Duality]\label{weak_dual}
+    With the definitions introduced above,
+    $$\sup_{\lambda\in\Lambda} h(\lambda)\le\inf_{x\in X,g(x)=b}f(x)$$
+\end{theorem}
+\begin{proof}
+    For any $x$ feasible for the primal problem and $\lambda$ feasible for the dual problem, then
+    $$h(\lambda)=\inf\{L(\xi,\lambda):\xi\in X\}\le L(x,\lambda)=f(x)$$
+    As $L(x,\lambda)=f(x)$ whenever $x$ is feasible.
+\end{proof}
+So we can restate Theorem \ref{lagrange_suff} in the following way instead:
+If $x^\star$ and $\lambda^\star$ are feasible for the primal and dual problems respectively, and $h(\lambda^\star)=f(x^\star)$, then $x^\star$ is optimal.
+\begin{remark}
+    The difference
+    $$\inf_{x\in X,g(x)=b}f(x)-\sup_{\lambda\in\Lambda}h(\lambda)$$
+    is called the duality gap.
+    It is in general nonnegative by Theorem \ref{weak_dual}.
+    By Theorem \ref{lagrange_nece}, if the value function of the primal problem is convex, then there is some $\lambda^\star\in\Lambda$ such that
+    $$\inf_{x\in X,g(x)=b}f(x)=\inf_{x\in X}L(x,\lambda^\star)=h(\lambda^\star)$$
+    So the duality gap is zero.
+    This is called \textit{strong duality}.
+\end{remark}
+\subsection{Duality in Linear Programs}
+\begin{definition}
+    Linear Programs are problems of maximising $c^\top x$ subject to $Ax\le b,x\ge 0$ where $A$ is an $m\times n$ matrix, $b\in\mathbb R^m$ and $c\in\mathbb R^n$.
+\end{definition}
+Of course, we can analyze the dual problem too.
+Introduce the slack variable $z\in\mathbb R^m$ and transform the problem to maximising $c^\top x$ subject to $Ax+z=b,x\ge 0,z\ge 0$.
+So the Lagrangian is
+$$L(x,z,\lambda)=c^\top x-\lambda^\top(b-Ax-z)=b^\top\lambda +(c-A^\top\lambda)^\top x-\lambda^\top z$$
+So
+$$\Lambda=\{\lambda\in\mathbb R^m:\sup_{x,z\ge 0}L(x,z,\lambda)<\infty\}=\{\lambda\in\mathbb R^m:A^\top\lambda\ge c,\lambda\ge 0\}$$
+Now the dual objective function is
+$$\sup_{x\ge 0,z\ge 0}L(x,z,\lambda)=b^\top\lambda$$
+for $\lambda\in\Lambda$.
+Hence the dual problem is to minimise $b^\top\lambda$ subject to $A^\top\lambda\ge c,\lambda\ge 0$.
+This looks just like our original problem.
+\subsection{The Barrier Method}
+Consider the optimisation problem of minimising a differentiable convex function $f:\mathbb R^n\to\mathbb R$ subject to $g(x)\le b$, where $g:\mathbb R^n\to\mathbb R^m$ has every one of its components differentiable.
+To tackle it (computationally), we consider the family of unconstrained minimisation problems of
+$$f(x)-\epsilon\sum_{i=1}^m\log(b_i-g_i(x))$$
+for $\epsilon>0$.
+Note that the constraint $g(x)<b$ is implicitly imposed due to the domain of $\log$.
+The idea of it, as one might have already observed, is to add an extra term which blows up to positive infinity if the condition $g(x)<b$ is not satisfied.
+The reason why we use a term in the $\epsilon\log$ form is to smoothen the blow-up term for computational issues.
+\begin{theorem}\label{barrier_method}
+    Suppose $x^\star$ is optimal for our original problem and $x_\epsilon$ is optimal for the problem shown above, then
+    $$0\le f(x_\epsilon)-f(x^\star)\le m\epsilon$$
+\end{theorem}
+To prove it, we shall introduce some preliminary notion.
+The Lagrangian for the original problem is $L(x,z,\lambda)=f(x)+\lambda^\top (b-z-g(x))$ for the slack variable $z\ge0$ and the set of feasible Lagrange multipliers are
+$$\Lambda=\{\lambda\in\mathbb R^m:\inf_{x\in\mathbb R^n,z\ge 0}L(x,z,\lambda)>-\infty\}$$
+\begin{claim}
+    Let $\lambda\in\mathbb R^m$ be such that $\lambda\le 0$ and that there exists some $x_\lambda\in\mathbb R^n$ with
+    $$Df(x_\lambda)=\sum_{i=1}^m\lambda_iDg_i(x_\lambda)$$s
+    Then $\lambda\in\Lambda$ and the dual objective function for this problem is just
+    $$h(\lambda)=b^\top\lambda+f(x_\lambda)-\lambda^\top g(x_\lambda)$$
+\end{claim}
+\begin{proof}
+    Recall that every convex differentiable function is minimised at any of its stationary points.
+    Also note that $f(x)-\lambda^\top g(x)$ is convex.
+    So for $x\in\mathbb R^n$ and $z\ge 0$ we have the bound
+    $$L(x,z,\lambda)=b^\top\lambda+f(x)-\lambda^\top g(x)-\lambda^\top z\ge b^\top\lambda+f(x_\lambda)-\lambda^\top g(x_\lambda)$$
+    Equality holds when $x=x_\lambda$ and $(z,\lambda)$ satisfies complementary slackness.
+    The rest follows.
+\end{proof}
+\begin{proof}[Proof of Theorem \ref{barrier_method}]
+    Recall that a differentiable function on an open set has derivative $0$ on any of its local minima.
+    As $x_\epsilon$ is optimal to the modified problem, we necessarily have
+    $$Df(x_\epsilon)=-\epsilon\sum_{i=1}^m\frac{Dg_i(x_\epsilon)}{b_i-g(x_\epsilon)}$$
+    So we set, for $i=1,\ldots,m$ we define $\lambda_i=-\epsilon/(b_i-g_i(x_\epsilon))$.
+    Then
+    $$Df(x_\epsilon)=\sum_{i=1}^m\lambda_iDg_i(x_\epsilon)$$
+    So by the preceding claim $\lambda\in\Lambda$.
+    Therefore, by Theorem \ref{weak_dual},
+    $$f(x_\epsilon)\ge f(x^\star)\ge h(\lambda)=f(x_\epsilon)+\lambda^\top(b-g(x_\epsilon))=f(x_\epsilon)-m\epsilon$$
+    which is the bound we wanted.
+\end{proof}
+\begin{remark}
+    As $f$ and $g_i$ are convex for all $i$, the value function $\phi(b)=\inf\{f(x):g(x)\le b\}$ is convex.
+    So by fixing $b$ and assuming there exists an optimiser $x^\star$, Theorem \ref{lagrange_nece} then tells us there is some $\lambda^\star$ with
+    $$L(x^\star,z^\star)=\inf\{L(x,z,\lambda^\star):x\in\mathbb R^n,z\ge 0\},z^\star=b-g(x^\star)$$
+\end{remark}
+Theorem \ref{barrier_method} inspires us to invent an algorithm to approach the optimal solution.
+Pick an initial guess $x_0\in\mathbb R^n$ with $g(x_0)<b$ and some initial $\epsilon_0>0$.
+For $k\ge 0$, we solve the modified problem with $\epsilon=\epsilon_k$ approximately (using e.g. gradient descent or Newton's method) starting from $x_k$.
+Then $x_{k+1}$ is defined to be the approximated optimal solution in this way, and reduce $\epsilon$ by $\epsilon_{k+1}=r\epsilon_k$ for some $r\in (0,1)$.
